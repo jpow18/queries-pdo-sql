@@ -28,17 +28,23 @@ include_once "./config/Database.php";
     </form>
     <div class="output">
       <?php
-        include_once "./config/phishapi.php";
-        echo $query;
-        for ($i = 0; $i < count($data["data"]); $i++) {
-          // skip show with apostrophe in venue name
-          if (strpos($data['data'][$i]['venue'], "'") !== false) {
-            continue;
-          }
-        $stmt = $pdo->prepare("INSERT INTO `showinfo` (`date`, `state`, `city`, `venue`) VALUES ('{$data["data"][$i]["showdate"]}', '{$data["data"][$i]["state"]}', '{$data["data"][$i]["city"]}', '{$data["data"][$i]["venue"]}')");
+        if ($query) {
+          $stmt = $pdo->prepare($query);
           $stmt->execute();
+
+          // check if query was SELECT. If so, use fetchAll()
+          if (strpos($query, 'SELECT') !== false) {
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($results as $key => $value) {
+              echo "<h3>".implode(' - ', $value)."</h3>";
+            }
+          } 
+
           $stmt->closeCursor();
+        } else {
+          echo "<h3>Please enter a query.</h3>";
         }
+
 
       ?>
     </div>
